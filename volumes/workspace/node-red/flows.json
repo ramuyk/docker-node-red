@@ -1,0 +1,107 @@
+[
+    {
+        "id": "f881fa3d7363d4f9",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "75f5c5cfbca11096",
+        "type": "subflow",
+        "name": "http auth",
+        "info": "Este nodo pode ser usado para criar autenticações junto com o nodo `http in`. Suas funcionalidades são:\n\n* Para criar multiplos usuários é necessário apenas preencher o JSON que está como parâmetro de entrada com usuários diferentes.\n* Todos os parâmetros enviados pela API e o usuário que está logando no sistema sairá dentro de `msg.payload` na saída desse nodo.",
+        "category": "network",
+        "in": [
+            {
+                "x": 60,
+                "y": 420,
+                "wires": [
+                    {
+                        "id": "444b512769544c1c"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 560,
+                "y": 420,
+                "wires": [
+                    {
+                        "id": "444b512769544c1c",
+                        "port": 1
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "users",
+                "type": "json",
+                "value": "{ \"user\": \"12345\" }"
+            }
+        ],
+        "meta": {},
+        "color": "#F2E2C3",
+        "icon": "node-red/feed.svg"
+    },
+    {
+        "id": "090f89f77bd85ac7",
+        "type": "http response",
+        "z": "75f5c5cfbca11096",
+        "name": "Not Authorized",
+        "statusCode": "401",
+        "headers": {
+            "content-type": "application/json",
+            "WWW-Authenticate": "Basic"
+        },
+        "x": 840,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "5b8bb3651fcf4a17",
+        "type": "template",
+        "z": "75f5c5cfbca11096",
+        "name": "Not Authorized",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{\"codigoErro\": 401, \"mensagem\":\"Não Autorizado\"}",
+        "output": "json",
+        "x": 620,
+        "y": 360,
+        "wires": [
+            [
+                "090f89f77bd85ac7"
+            ]
+        ]
+    },
+    {
+        "id": "444b512769544c1c",
+        "type": "function",
+        "z": "75f5c5cfbca11096",
+        "name": "HTTP Auth",
+        "func": "let USERS = env.get(\"users\")\n\nfunction basicauth(req) {\n    let ret = null;\n    let authheader = req.headers.authorization;\n    if (authheader) {\n        let auth = new Buffer.from(authheader.split(\" \")[1],\"base64\").toString().split(\":\");\n        if (auth.length > 1) {\n            let user = auth[0];\n            let pass = auth[1];\n            \n            if (user in USERS && USERS[user]==pass) {\n                ret = user;\n            }\n        }\n    }\n    \n    return ret;\n}\n\nlet user = basicauth(msg.req);\n\nif (user !== null) {\n    let payload = msg.payload;\n    msg.payload = {};\n    //node.warn(payload);\n    if (Buffer.isBuffer(payload))\n    {\n        msg.payload.data = payload.toString('base64');\n    }\n    else if ((typeof payload).toLowerCase() != \"string\")\n    {\n        msg.payload.data = JSON.stringify(payload);\n    }\n    msg.payload.user = user;\n}\n\nmsg.user = user;\n\nreturn (user === null) ? [msg, null] : [null, msg];",
+        "outputs": 2,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 420,
+        "wires": [
+            [
+                "5b8bb3651fcf4a17"
+            ],
+            []
+        ],
+        "outputLabels": [
+            "Not Authorized",
+            "OK"
+        ]
+    }
+]

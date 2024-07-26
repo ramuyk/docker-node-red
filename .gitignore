@@ -1,0 +1,8 @@
+volumes/workspace/node-red/.*
+static/
+**/.trashed*
+**/node_modules/
+**/core.*
+**/.ipynb_checkpoints/
+**/__pycache__/
+

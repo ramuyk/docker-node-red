@@ -1,0 +1,12 @@
+{
+    "apps" : [
+        {
+            "name"        : "node-red",
+            "script"      : "node-red -u /data/workspace/node-red"
+        },{ 
+            "name"        : "jupyter",
+            "env"         : { "SHELL" : "/bin/bash" },
+            "script"      : "jupyter-lab --no-browser --ip='*' --allow-root --ServerApp.password='argon2:$argon2id$v=19$m=10240,t=10,p=8$iqVcJu5ZqFd8Aa5pO8d9ow$+6u3Wbi+0cOTRNnlV970S6jSQgtiavGqppYiaUeGHgk'"
+        }
+    ]
+}
